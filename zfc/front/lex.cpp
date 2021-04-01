@@ -1,4 +1,5 @@
 #include "lex.hpp"
+#include <cctype>
 
 Token::Token() {
     
@@ -17,25 +18,6 @@ namespace {
 
 // Whether in the INSIDE of a comment or a quote.
 bool in_comment = false;
-
-bool is_whitespace(char c) {
-    switch (c) {
-        case '\t':
-        case ' ':
-        case '\n':
-            return true;
-        default:
-            return false;
-    }
-}
-
-bool is_alpha(char c) {
-    return ( (c >= 'a') && (c <= 'z') ) || ( (c >= 'A') && (c <= 'Z') );
-}
-
-bool is_numeric(char c) {
-    return (c >= '0') && (c <= '9');
-}
 
 bool is_op_token(char c) {
     switch (c) {
@@ -87,8 +69,8 @@ void add_char(char c) {
 bool begins_token(char prev, char cur) {
     if (cur == '~')                 return (!in_comment);
     if (in_comment)                 return false;
-    if (is_whitespace(cur))         return false;
-    if (is_whitespace(prev))        return true;
+    if (isspace(cur))         return false;
+    if (isspace(prev))        return true;
     if (cend == 0)                  return true;
     if (prev == '\0')               return true;
     if (is_op_token(cur))           return true;
@@ -100,8 +82,8 @@ bool begins_token(char prev, char cur) {
 bool ends_token(char cur, char next) {
     if (cur == '~')                 return in_comment;
     if (in_comment)                 return false;
-    if (is_whitespace(cur))         return false;
-    if (is_whitespace(next))        return true;
+    if (isspace(cur))         return false;
+    if (is_space(next))        return true;
     if (next < 1)                   return true;
     if (is_op_token(cur))           return (next != '=');
     if (is_always_tok(cur))         return true;
@@ -166,10 +148,10 @@ TreeComp get_type(std::string name) {
     if (name == "loop") return TreeComp::LOOP;
     if (name == "if") return TreeComp::IF;
     if (name == "else") return TreeComp::ELSE;
-    if (is_alpha(name[0])) {
+    if (isalpha(name[0])) {
         return (lastwascolon) ? TreeComp::TYPENAME : TreeComp::IDENTIFIER;
     }
-    if (is_numeric(name[0]))
+    if (isdigit(name[0]))
         return TreeComp::LITERAL;
     // when in doubt ...
     return TreeComp::IDENTIFIER;
